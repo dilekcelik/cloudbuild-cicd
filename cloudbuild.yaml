@@ -1,0 +1,38 @@
+steps:
+# Step 1: Build the container image - replaced COMMIT_SHA with BUILD_ID
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID', '.']
+  
+# Step 2: Push the image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID']
+
+# Step 3: Run pytest inside the built container
+- name: 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID'
+  entrypoint: 'bash'
+  args:
+   - '-c'
+   - |
+      pip install -r requirements.txt
+      python -m pytest
+
+# Step 4: Deploy to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+   - 'run'
+   - 'deploy'
+   - 'py-bq-load'
+   - '--image'
+   - 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID'
+   - '--region'
+   - 'us-central1'
+   - '--allow-unauthenticated'
+
+# Specify the images to be pushed
+images:
+- 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID'
+
+# Set logging options
+options:
+  logging: CLOUD_LOGGING_ONLY
