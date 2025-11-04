@@ -1,14 +1,14 @@
 steps:
 # Step 1: Build the container image - replaced COMMIT_SHA with BUILD_ID
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID', '.']
+  args: ['build', '-t', 'gcr.io/frauddetectionmlops/demo-flask-app:$COMMIT_SHA', '.']
   
 # Step 2: Push the image to Container Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID']
+  args: ['push', 'gcr.io/frauddetectionmlops/demo-flask-app:$COMMIT_SHA']
 
 # Step 3: Run pytest inside the built container
-- name: 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID'
+- name: 'gcr.io/frauddetectionmlops/demo-flask-app:$COMMIT_SHA'
   entrypoint: 'bash'
   args:
    - '-c'
@@ -24,14 +24,14 @@ steps:
    - 'deploy'
    - 'py-bq-load'
    - '--image'
-   - 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID'
+   - 'gcr.io/frauddetectionmlops/demo-flask-app:$COMMIT_SHA'
    - '--region'
    - 'us-central1'
    - '--allow-unauthenticated'
 
 # Specify the images to be pushed
 images:
-- 'gcr.io/frauddetectionmlops/demo-flask-app:$BUILD_ID'
+- 'gcr.io/frauddetectionmlops/demo-flask-app:$COMMIT_SHA'
 
 # Set logging options
 options:
